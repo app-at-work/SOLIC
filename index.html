@@ -78,6 +78,15 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;padding:20px 24px;wi
 .view-tg button,.seg button{border:none;background:transparent;color:var(--muted);display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:7px;font-weight:600;font-size:13px;transition:.15s}
 .view-tg button.on,.seg button.on{background:var(--card);color:var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .view-tg button:focus-visible,.seg button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.stq .qn{font-size:11px;font-weight:700;min-width:20px;height:18px;padding:0 6px;border-radius:10px;display:inline-grid;place-items:center;background:var(--line);color:var(--muted)}
+.stq button[data-q="EM ABERTO"].on{color:var(--warn)}
+.stq button[data-q="EM ABERTO"].on .qn{background:var(--warn-soft);color:var(--warn)}
+.stq button[data-q="APROVADA"].on{color:var(--ok)}
+.stq button[data-q="APROVADA"].on .qn{background:var(--ok-soft);color:var(--ok)}
+.stq button[data-q=""].on .qn{background:var(--pri-soft);color:var(--pri)}
+.kpi.click{cursor:pointer;transition:.15s;border:2px solid transparent}
+.kpi.click:hover{transform:translateY(-1px)}
+.kpi.click.on{border-color:var(--pri)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px}
 .chips:not(:empty){padding:10px 16px;border-bottom:1px solid var(--line)}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--pri-soft);color:var(--pri);padding:5px 6px 5px 11px;border-radius:20px;font-size:12px;font-weight:600}
@@ -256,6 +265,8 @@ textarea.ctrl{resize:vertical;min-height:84px}
   .toolbar .search{flex:1 1 100%;order:1}
   .toolbar .count{order:2;margin-right:auto;font-size:12px}
   .toolbar .view-tg{order:3}
+  .toolbar .stq{order:2;flex:1 1 100%;display:flex}
+  .toolbar .stq button{flex:1;justify-content:center;padding:7px 6px}
   .selbar{padding:8px 12px;gap:6px}
   .selbar .info{flex:1 1 100%;font-size:13px}
   .selbar .btn{flex:1 1 calc(50% - 6px);justify-content:center;padding:8px 10px}
@@ -294,9 +305,9 @@ textarea.ctrl{resize:vertical;min-height:84px}
 
 <main>
   <section class="kpis">
-    <div class="kpi"><div class="ico" data-ic="clipboard"></div><div><small>Solicitações</small><b id="kQtd">0</b></div></div>
-    <div class="kpi"><div class="ico w" data-ic="clock"></div><div><small>Em aberto</small><b id="kAberto">0</b></div></div>
-    <div class="kpi"><div class="ico" data-ic="badge"></div><div><small>Aprovadas</small><b id="kAprov">0</b></div></div>
+    <div class="kpi click" data-kq="" role="button" tabindex="0" title="Mostrar todas"><div class="ico" data-ic="clipboard"></div><div><small>Solicitações</small><b id="kQtd">0</b></div></div>
+    <div class="kpi click" data-kq="EM ABERTO" role="button" tabindex="0" title="Filtrar em aberto"><div class="ico w" data-ic="clock"></div><div><small>Em aberto</small><b id="kAberto">0</b></div></div>
+    <div class="kpi click" data-kq="APROVADA" role="button" tabindex="0" title="Filtrar aprovadas"><div class="ico" data-ic="badge"></div><div><small>Aprovadas</small><b id="kAprov">0</b></div></div>
     <div class="kpi"><div class="ico" data-ic="money"></div><div><small>Valor total</small><b id="kTotal">R$ 0,00</b></div></div>
     <div class="kpi"><div class="ico" data-ic="store"></div><div><small>Fornecedores</small><b id="kForn">0</b></div></div>
   </section>
@@ -304,6 +315,11 @@ textarea.ctrl{resize:vertical;min-height:84px}
   <section class="panel" id="panel">
     <div class="toolbar">
       <label class="search"><span data-ic="search"></span><input id="busca" type="search" placeholder="Buscar por OM, requisição, equipamento, descrição..." aria-label="Buscar"></label>
+      <div class="seg stq" id="qStatus" role="group" aria-label="Filtrar por status">
+        <button type="button" data-q=""><span data-ic="list"></span><span class="lbl">Todas</span><span class="qn" id="qnT">0</span></button>
+        <button type="button" data-q="EM ABERTO"><span data-ic="clock"></span><span class="lbl">Em aberto</span><span class="qn" id="qnA">0</span></button>
+        <button type="button" data-q="APROVADA"><span data-ic="badge"></span><span class="lbl">Aprovadas</span><span class="qn" id="qnP">0</span></button>
+      </div>
       <span class="count" id="count" aria-live="polite"></span>
       <div class="view-tg" role="group" aria-label="Modo de visualização">
         <button type="button" data-view="tabela" aria-pressed="true"><span data-ic="table"></span><span class="lbl">Tabela</span></button>
@@ -428,7 +444,8 @@ textarea.ctrl{resize:vertical;min-height:84px}
     <div class="modal-f">
       <button type="button" class="btn" data-close="mImg">Fechar</button>
       <button type="button" class="btn" id="imgDown"><span data-ic="download"></span>Baixar PNG</button>
-      <button type="button" class="btn primary" id="imgCopy"><span data-ic="copy"></span>Copiar imagem</button>
+      <button type="button" class="btn" id="imgCopy"><span data-ic="copy"></span>Copiar imagem</button>
+      <button type="button" class="btn primary" id="imgCopyAll"><span data-ic="layers"></span>Copiar imagem + texto</button>
     </div>
   </div>
 </div>
@@ -485,6 +502,8 @@ const ICONS={
   table:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+  layers:'<path d="m12 2 10 5-10 5L2 7l10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
   copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
 };
 const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
@@ -798,6 +817,13 @@ $('btnLimparF').addEventListener('click',()=>{
   closeM('mFiltros');render();
 });
 $('busca').addEventListener('input',render);
+/* ===== FILTRO RÁPIDO DE STATUS ===== */
+function setStatusFiltro(v){filtros.status=v||'';render();}
+$('qStatus').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(b)setStatusFiltro(b.dataset.q);});
+document.querySelectorAll('[data-kq]').forEach(k=>{
+  k.addEventListener('click',()=>setStatusFiltro(k.dataset.kq));
+  k.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setStatusFiltro(k.dataset.kq);}});
+});
 
 function renderChips(){
   const c=[];
@@ -891,12 +917,16 @@ function render(){
   $('cards').style.visibility=rows.length?'':'hidden';
   document.querySelector('table').style.visibility=rows.length?'':'hidden';
   $('count').textContent=`${rows.length} de ${registros.length} registro(s)`;
+  const st=filtros.status;filtros.status='';const base=filtrados();filtros.status=st;
+  const bA=base.filter(r=>!isAprov(r)).length;
+  $('qnT').textContent=base.length;$('qnA').textContent=bA;$('qnP').textContent=base.length-bA;
+  document.querySelectorAll('#qStatus [data-q]').forEach(b=>{const on=b.dataset.q===st;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);});
+  document.querySelectorAll('[data-kq]').forEach(k=>k.classList.toggle('on',!!st&&k.dataset.kq===st));
 
   const tot=rows.reduce((s,r)=>s+(r.valor||0),0);
-  const nAprov=rows.filter(isAprov).length;
-  $('kQtd').textContent=rows.length;
-  $('kAberto').textContent=rows.length-nAprov;
-  $('kAprov').textContent=nAprov;
+  { const st2=filtros.status;filtros.status='';const b2=filtrados();filtros.status=st2;
+    const nAp=b2.filter(isAprov).length;
+    $('kQtd').textContent=b2.length;$('kAberto').textContent=b2.length-nAp;$('kAprov').textContent=nAp; }
   $('kTotal').textContent=fmtBRL.format(tot);$('kTotal').title=fmtBRL.format(tot);
   $('kForn').textContent=new Set(rows.map(r=>r.fornecedor).filter(Boolean)).size;
 
@@ -1139,10 +1169,40 @@ async function atualizarImagem(){
 $('btnImagem').addEventListener('click',async()=>{
   if(!selecionados.size){toast('Selecione ao menos uma solicitação','err');return;}
   imgCols=selecionados.size===1?1:(selecionados.size<=4?2:3);
+  delete $('imgCopyAll').dataset.next;$('imgCopyAll').lastChild.textContent='Copiar imagem + texto';
   openM('mImg');await atualizarImagem();
 });
 $('segCols').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){imgCols=+b.dataset.c;atualizarImagem();}});
 $('imgDown').addEventListener('click',()=>{if(imgBlob){baixar(`solicitacoes_${today()}.png`,imgBlob);toast('Imagem baixada');}});
+function blobToDataURL(b){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b);});}
+$('imgCopyAll').addEventListener('click',async()=>{
+  if(!imgBlob)return;
+  const txt=textoSelecionadas();
+  const bt=$('imgCopyAll');
+  if(bt.dataset.next==='texto'){ // 2º passo do modo alternativo
+    delete bt.dataset.next;bt.lastChild.textContent='Copiar imagem + texto';
+    if(await copiarTexto(txt))toast('Texto copiado');else toast('Não foi possível copiar o texto','err');
+    return;
+  }
+  try{
+    // HTML com imagem + texto (Outlook, Teams, Word) e formatos separados como alternativa
+    const dataUrl=await blobToDataURL(imgBlob);
+    const html=`<div><img src="${dataUrl}" alt="Solicitações" style="max-width:100%"><br><pre style="font-family:Segoe UI,Arial,sans-serif;white-space:pre-wrap">${esc(txt)}</pre></div>`;
+    await navigator.clipboard.write([new ClipboardItem({
+      'image/png':imgBlob,
+      'text/html':new Blob([html],{type:'text/html'}),
+      'text/plain':new Blob([txt],{type:'text/plain'})
+    })]);
+    toast('Imagem e texto copiados');
+  }catch(e){
+    // navegador sem suporte a múltiplos formatos: copia a imagem e depois o texto
+    try{
+      await navigator.clipboard.write([new ClipboardItem({'image/png':imgBlob})]);
+      toast('Imagem copiada. Cole-a e depois clique em "Copiar texto agora"');
+      bt.dataset.next='texto';bt.lastChild.textContent='Copiar texto agora';
+    }catch(_){toast('Navegador não permite copiar imagem. Use Baixar PNG e Copiar texto','err');}
+  }
+});
 $('imgCopy').addEventListener('click',async()=>{
   try{await navigator.clipboard.write([new ClipboardItem({'image/png':imgBlob})]);toast('Imagem copiada');}
   catch(e){toast('Navegador não permite copiar imagem. Use Baixar PNG','err');}
