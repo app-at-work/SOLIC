@@ -164,10 +164,10 @@ input.chk:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
 .rc-f .v{flex:1;font-size:17px;font-weight:800;color:var(--pri)}
 
 /* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(10,15,25,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.overlay{position:fixed;inset:0;place-items:center;background:rgba(10,15,25,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
 .overlay.show{display:flex;animation:fade .15s}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.modal{background:var(--card);border-radius:18px;width:100%;max-width:820px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:up .2s}
+.modal{background:var(--card);border-radius:18px;width:100%;max-width:820px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);margin:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:up .2s}
 .modal.sm{max-width:440px}
 .modal.lg{max-width:1100px}
 @keyframes up{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
@@ -276,8 +276,8 @@ textarea.ctrl{resize:vertical;min-height:84px}
 }
 @media (max-width:640px){
   .grid,.det{grid-template-columns:1fr}
-  .overlay{padding:0;align-items:flex-end}
-  .modal,.modal.lg,.modal.sm{max-width:100%;max-height:94vh;border-radius:18px 18px 0 0}
+  .overlay{padding:12px;align-items:center;justify-content:center}
+  .modal,.modal.lg,.modal.sm{max-width:100%;max-height:calc(100dvh - 24px);border-radius:16px}
   .modal-h{padding:14px 16px}.modal-b{padding:14px 16px}.modal-f{padding:12px 16px}
   .modal-f .btn{flex:1;justify-content:center}
   .toasts{left:12px;right:12px;bottom:12px}
